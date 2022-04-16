@@ -1,24 +1,38 @@
 const nodemailer = require("nodemailer");
 const csv = require('csv-parser');
 const fs = require('fs');
+let template=require('./mailTemplate');
+const { env } = require("process");
 require('dotenv').config();
 
+//Defining the transporter for the mail
 let transporter = nodemailer.createTransport({
-    // service: 'gmail',
-    host: 'smtp.gmail.com',
-    port: 465,
+    // service: 'Go Daddy'
+    host: "smtpout.secureserver.net",  
     secure: true,
+    secureConnection: false, // TLS requires secureConnection to be false
+    tls: {
+        ciphers:'SSLv3'
+    },
+    requireTLS:true,
+    port: 465,
+    debug: true,
     auth: {
         user: process.env.EMAIL,
         pass: process.env.PASSWORD
     }
 });
+
+//Defining the mail details
 let getMailDetails=(personName,personEmail)=>{
     let mailDetails = {
-        from: 'alumniaffairs.uiet@gmail.com',
+        from:  {
+            name: 'Alumni Affairs Cell UIET PU',
+            address: 'alumniaffairs@uietpu.in'
+        },
         to: personEmail,
-        subject: 'Test Mail',
-        text:'This is a test mail from Databse/Star office.For testing our mailing script.Kindly Ignore!'
+        subject: `Test`,
+        html:template()
     };
     return mailDetails;
 }
@@ -36,12 +50,20 @@ let sendMail=(mailDetails)=>{
 }
 
 let idx=0;
-fs.createReadStream('./xyz.csv')
+let str=""
+// let mailDetail=getMailDetails('Yuvraj','yuvrajmann282@gmail.com');
+// sendMail(mailDetail);
+
+fs.createReadStream('./2014EEE.csv')
   .pipe(csv())
   .on('data', (row) => {
+    let mail=row['Email'];
+    let name=row['Name']; 
+
+    // cout<<mail<<" "<<name<<endl;
     setTimeout(() => {
-        let mailDetail=getMailDetails(row.Name,row['E-Mail ID']);
-        sendMail(mailDetail);
+        let mailDetail=getMailDetails(name,mail);
+        sendMail(mailDetail);    
     }, 2000 * idx);
     idx++;
   })
